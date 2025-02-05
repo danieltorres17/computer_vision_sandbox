@@ -11,5 +11,3 @@ alias sni='sudo ninja install'
 alias gs='git status'
 alias gc='git commit'
 alias gb='git branch'
-
-alias rm_docker_untagged='source /etc/util_scripts/rm_docker_untagged.sh'
