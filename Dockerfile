@@ -50,16 +50,12 @@ RUN cd ${HOME} && \
   rm -rf ceres-solver
 
 # Install gtsam.
-RUN cd ${HOME} && \
-  git clone https://github.com/borglab/gtsam && \
-  cd gtsam && \
-  mkdir build && \
-  cd build && \
-  cmake -DCMAKE_BUILD_TYPE=Release -DGTSAM_BUILD_TESTS=OFF -DGTSAM_BUILD_UNSTABLE=ON -DTGSAM_BUILD_EXAMPLES=OFF -DGTSAM_SHARED_LIB=ON -G Ninja .. && \
-  ninja -j8 && \
-  ninja install && \
-  cd ${HOME} && \
-  rm -rf gtsam
+RUN add-apt-repository ppa:borglab/gtsam-develop && \
+  apt update && \
+  apt install --no-install-recommends -y \
+  libgtsam-dev \
+  libgtsam-unstable-dev && \
+  rm -rf /var/lib/apt/lists/*
 
 # Install gtest.
 RUN cd ${HOME} && \
@@ -112,15 +108,20 @@ RUN cd ${HOME} && \
   cd ${HOME} && \
   rm -rf navlie
 
-  # To enable Matplotlib visualization from python script.
+# To enable Matplotlib visualization from python script.
 RUN --mount=type=cache,target=/var/cache/apt \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-  python3-tk 
+  python3-tk \
+  libtbb-dev && \
+  rm -rf /var/lib/apt/lists/*
 
-  # Create user and add it to sudo group.
+# Create user and add it to sudo group.
 ARG USERNAME=cv-dev
-RUN useradd -m ${USERNAME} && echo "${USERNAME}:${USERNAME}" | chpasswd 
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
+RUN useradd -m ${USERNAME} -u ${USER_UID} && echo "${USERNAME}:${USERNAME}" | chpasswd 
 RUN usermod -aG sudo ${USERNAME} 
+ENV HOME=/home/${USERNAME}
 
 COPY .bash_aliases /home/${USERNAME}/.bash_aliases
